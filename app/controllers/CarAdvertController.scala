@@ -39,14 +39,14 @@ class CarAdvertController extends Controller {
 
   def index = Action { request =>
     val json = Json.toJson(Adverts(cars))
-    Ok(Json.stringify(json))
+    Ok(json)
   }
 
   def read(id: Int) = Action { request =>
     cars.find(ad => ad.id == Option(id)) match {
       case Some(ad) =>
         val json = Json.toJson(ad)
-        Ok(Json.stringify(json))
+        Ok(json)
 
       case None => NoContent
     }
@@ -58,7 +58,9 @@ class CarAdvertController extends Controller {
         val car = parseJsonCar(jsonBody)
         if (car.isNew || validOldCar(car)) {
           cars = cars ::: List(car)
-          Created
+
+          val msg = Json.toJson(Map("message"-> "added successfully"))
+          Created(msg)
         } else {
           val msg = Json.toJson(Map("message" -> "`new` and `first_registration` are mandatory for old cars."))
           BadRequest(msg)
@@ -84,7 +86,9 @@ class CarAdvertController extends Controller {
                   mileage = car.mileage, firstReg = car.firstReg
                 )
               )
-              Accepted
+
+              val msg = Json.toJson(Map("message"-> "updated successfully"))
+              Accepted(msg)
 
             case None => NotModified
           }
@@ -102,13 +106,14 @@ class CarAdvertController extends Controller {
     cars.find(c => c.id == Option(id)) match {
       case Some(car) =>
         cars = cars.filter(c => c.id != Option(id))
-        Accepted
+        val msg = Json.toJson(Map("message"-> "deleted successfully"))
+        Accepted(msg)
 
       case None => NotModified
     }
   }
 
-  def describe = Action{ request =>
+  def describe = Action { request =>
     val msg = Json.obj(
       "message" -> "You may use the next URIs to interact with car advert service",
       "desc" -> Json.arr(
@@ -144,7 +149,7 @@ class CarAdvertController extends Controller {
         )
       )
     )
-    Ok (Json.stringify(msg))
+    Ok(msg)
   }
 
   private def parseJsonCar(json: JsValue): Car = {

@@ -53,7 +53,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
       val result: Future[Result] = controller.read(111)
         .apply(FakeRequest(GET, "/api/car-ad/111"))
 
-      status(result) must be(204)
+      status(result) must be(NO_CONTENT)
     }
   }
 
@@ -70,7 +70,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
       val titles = (json \ "adverts" \\ "title")
         .map(_.as[String]) //to convert JsString to String
 
-      status(result) must be(202)
+      status(result) must be(ACCEPTED)
       titles must be(List("Audi A4", "Kia Ceed"))
     }
 
@@ -87,7 +87,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
       val titles = (json \ "adverts" \\ "title")
         .map(_.as[String]) //to convert JsString to String
 
-      status(result) must be(304)
+      status(result) must be(NOT_MODIFIED)
       titles must be(List("Audi A4", "Kia Ceed", "Skoda Octavia"))
     }
   }
@@ -114,7 +114,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
       val titles = (json \ "adverts" \\ "title")
         .map(_.as[String]) //to convert JsString to String
 
-      status(result) must be(201)
+      status(result) must be(CREATED)
       titles must be(List("Audi A4", "Kia Ceed", "Skoda Octavia", "Lanos"))
     }
 
@@ -141,7 +141,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
       val titles = (json \ "adverts" \\ "title")
         .map(_.as[String]) //to convert JsString to String
 
-      status(result) must be(201)
+      status(result) must be(CREATED)
       titles must be(List("Audi A4", "Kia Ceed", "Skoda Octavia", "Lanos"))
     }
 
@@ -166,7 +166,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
       val titles = (json \ "adverts" \\ "title")
         .map(_.as[String]) //to convert JsString to String
 
-      status(result) must be(400)
+      status(result) must be(BAD_REQUEST)
       assert(contentAsString(result) contains ("`new` and `first_registration` are mandatory for old cars."))
       titles must be(List("Audi A4", "Kia Ceed", "Skoda Octavia"))
     }
@@ -191,7 +191,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
       val titles = (json \ "adverts" \\ "title")
         .map(_.as[String]) //to convert JsString to String
 
-      status(result) must be(400)
+      status(result) must be(BAD_REQUEST)
       assert(contentAsString(result) contains ("`new` and `first_registration` are mandatory for old cars."))
       titles must be(List("Audi A4", "Kia Ceed", "Skoda Octavia"))
     }
@@ -219,7 +219,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
       val titles = (json \ "adverts" \\ "title")
         .map(_.as[String]) //to convert JsString to String
 
-      status(result) must be(202)
+      status(result) must be(ACCEPTED)
       titles must be(List("Audi A4", "Kia Ceed", "Lanos"))
     }
 
@@ -245,7 +245,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
       val titles = (json \ "adverts" \\ "title")
         .map(_.as[String]) //to convert JsString to String
 
-      status(result) must be(304)
+      status(result) must be(NOT_MODIFIED)
       titles must be(List("Audi A4", "Kia Ceed", "Skoda Octavia"))
     }
 
@@ -270,7 +270,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
       val titles = (json \ "adverts" \\ "title")
         .map(_.as[String]) //to convert JsString to String
 
-      status(result) must be(400)
+      status(result) must be(BAD_REQUEST)
       titles must be(List("Audi A4", "Kia Ceed", "Skoda Octavia"))
     }
 
@@ -295,7 +295,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
       val titles = (json \ "adverts" \\ "title")
         .map(_.as[String]) //to convert JsString to String
 
-      status(result) must be(400)
+      status(result) must be(BAD_REQUEST)
       titles must be(List("Audi A4", "Kia Ceed", "Skoda Octavia"))
     }
   }

@@ -1,4 +1,5 @@
 import org.scalatestplus.play._
+import play.api.libs.json.Json
 import play.api.test._
 import play.api.test.Helpers._
 
@@ -27,6 +28,68 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
       contentAsString(home) must include ("Your new application is ready.")
     }
 
+  }
+
+  "CarAdvertController" should {
+    "return list of all car adverts" in {
+      val resp = route(app, FakeRequest(GET, "/api/car-ads")).get
+
+      status(resp) mustBe OK
+      contentType(resp) mustBe Some("application/json")
+    }
+
+    "return a car advert for id" in {
+      val resp = route(app, FakeRequest(GET, "/api/car-ad/22")).get
+
+      status(resp) mustBe OK
+      contentType(resp) mustBe Some("application/json")
+    }
+
+    "create a car advert" in {
+      val jsonReq = Json.obj(
+        "title" -> "Lanos",
+        "fuel" -> "gasoline",
+        "price" -> 10000,
+        "new" -> true
+      )
+      val req = FakeRequest(PUT, "/api/car-ad").withJsonBody(jsonReq)
+      val resp = route(app, req).get
+
+      status(resp) mustBe CREATED
+      contentType(resp) mustBe Some("application/json")
+    }
+
+    "update a car advert" in {
+      val jsonReq = Json.obj(
+        "title" -> "Lanos",
+        "fuel" -> "gasoline",
+        "price" -> 10000,
+        "new" -> false,
+        "mileage" -> 30000,
+        "first_registration" -> "2002-04-07"
+      )
+      val req = FakeRequest(POST, "/api/car-ad/33").withJsonBody(jsonReq)
+      val resp = route(app, req).get
+
+      status(resp) mustBe ACCEPTED
+      contentType(resp) mustBe Some("application/json")
+    }
+
+    "delete a car advert" in {
+      val req = FakeRequest(DELETE, "/api/car-ad/33")
+      val resp = route(app, req).get
+
+      status(resp) mustBe ACCEPTED
+      contentType(resp) mustBe Some("application/json")
+    }
+
+    "view options for the web service" in {
+      val req = FakeRequest(OPTIONS, "/api/car-ads")
+      val resp = route(app, req).get
+
+      status(resp) mustBe OK
+      contentType(resp) mustBe Some("application/json")
+    }
   }
 
 }
