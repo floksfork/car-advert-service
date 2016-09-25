@@ -6,7 +6,7 @@ import java.util.Date
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 class CarAdvertController extends Controller {
 
@@ -52,11 +52,24 @@ class CarAdvertController extends Controller {
     }
   }
 
-  def create = TODO
+  def create = Action { request =>
+    request.body.asJson match {
+      case Some(jsonBody) =>
+        val car = parseJsonCar(jsonBody)
+        if (car.isNew || validOldCar(car)) {
+          cars = cars ::: List(car)
+          Created
+        } else {
+          BadRequest("`new` and `first_registration` are mandatory for old cars.")
+        }
+
+      case None => BadRequest("Expected application/json request.")
+    }
+  }
 
   def update(id: Int) = TODO
 
-  def delete(id: Int) = Action {request =>
+  def delete(id: Int) = Action { request =>
     cars.find(c => c.id == Option(id)) match {
       case Some(car) =>
         cars = cars.filter(c => c.id != Option(id))
@@ -67,6 +80,27 @@ class CarAdvertController extends Controller {
   }
 
   def describe = TODO
+
+  private def parseJsonCar(json: JsValue): Car = {
+    val title = (json \ "title").as[String]
+    val fuel = (json \ "fuel").as[String]
+    val price = (json \ "price").as[Int]
+    val isNew = (json \ "new").as[Boolean]
+    val mileage = (json \ "mileage").validateOpt[Int].getOrElse(None)
+    val firstReg: Option[Date] = parseFirstRegistation(json)
+
+    Car(Option(999), title, fuel, price, isNew, mileage, firstReg)
+  }
+
+  private def validOldCar(car: Car): Boolean = car.mileage.isDefined && car.firstReg.isDefined
+
+  private def parseFirstRegistation(json: JsValue): Option[Date] = (json \ "first_registration").validateOpt[String].getOrElse(None) match {
+    case Some(d) => strToDate(d) match {
+      case s: Success[Date] => Option(s.get)
+      case f: Failure[Date] => None
+    }
+    case None => None
+  }
 }
 
 case class Car(id: Option[Int],
@@ -84,7 +118,7 @@ case class Car(id: Option[Int],
   }
 
   def mileageStr: String = mileage match {
-    case Some (m) => m.toString
+    case Some(m) => m.toString
     case None => ""
   }
 }
