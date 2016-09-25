@@ -114,7 +114,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
 
       (json \ "id").as[Int] must be(777)
       (json \ "title").as[String] must be("Skoda Octavia")
-      (json \ "fuel").as[String] must be("disel")
+      (json \ "fuel").as[String] must be("diesel")
       (json \ "new").as[Boolean] must be(true)
       (json \ "mileage").as[String] must be("")
       (json \ "first_registration").as[String] must be("")

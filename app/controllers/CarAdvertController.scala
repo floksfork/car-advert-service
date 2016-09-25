@@ -14,16 +14,16 @@ class CarAdvertController extends Controller {
 
   //TODO: switch to DB storage lately.
   var cars = List[Car](
-    Car(Some(22), "Audi A4", "disel", 10000, false, Option(43000), Option(strToDate("2008-09-14").get)),
-    Car(Some(33), "Kia Ceed", "gasoline", 8000, false, Option(27000), Option(strToDate("2013-05-28").get)),
-    Car(Some(777), "Skoda Octavia", "disel", 25000, true, None, None)
+    Car(Some(22), "Audi A4", Fuel("diesel"), 10000, false, Option(43000), Option(strToDate("2008-09-14").get)),
+    Car(Some(33), "Kia Ceed", Fuel("gasoline"), 8000, false, Option(27000), Option(strToDate("2013-05-28").get)),
+    Car(Some(777), "Skoda Octavia", Fuel("diesel"), 25000, true, None, None)
   )
 
   implicit val carAdWrites = new Writes[Car] {
     override def writes(c: Car): JsValue = Json.obj(
       "id" -> c.id,
       "title" -> c.title,
-      "fuel" -> c.fuel,
+      "fuel" -> c.fuel.name,
       "price" -> c.price.toString,
       "new" -> c.isNew,
       "mileage" -> c.mileageStr,
@@ -160,7 +160,7 @@ class CarAdvertController extends Controller {
     val mileage = (json \ "mileage").validateOpt[Int].getOrElse(None)
     val firstReg: Option[Date] = parseFirstRegistation(json)
 
-    Car(Option(999), title, fuel, price, isNew, mileage, firstReg)
+    Car(Option(999), title, Fuel(fuel), price, isNew, mileage, firstReg)
   }
 
   private def validOldCar(car: Car): Boolean = car.mileage.isDefined && car.firstReg.isDefined
@@ -184,9 +184,28 @@ class CarAdvertController extends Controller {
   }
 }
 
+abstract class Fuel extends Ordered[Fuel]{
+
+  override def compare(that: Fuel): Int = this.name compare that.name
+
+  def name: String
+}
+object Fuel {
+  def apply(name: String):Fuel = name match {
+    case "diesel" => Diesel
+    case _ => Gasoline
+  }
+}
+case object Diesel extends Fuel {
+  override def name: String = "diesel"
+}
+case object Gasoline extends Fuel{
+  override def name: String = "gasoline"
+}
+
 case class Car(id: Option[Int],
                title: String,
-               fuel: String,
+               fuel: Fuel,
                price: Int,
                isNew: Boolean,
                mileage: Option[Int],
