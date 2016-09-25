@@ -38,7 +38,7 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
     }
 
     "return a car advert for id" in {
-      val resp = route(app, FakeRequest(GET, "/api/car-ad/22")).get
+      val resp = route(app, FakeRequest(GET, "/api/car-ad/18")).get
 
       status(resp) mustBe OK
       contentType(resp) mustBe Some("application/json")
@@ -67,7 +67,7 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
         "mileage" -> 30000,
         "first_registration" -> "2002-04-07"
       )
-      val req = FakeRequest(POST, "/api/car-ad/33").withJsonBody(jsonReq)
+      val req = FakeRequest(POST, "/api/car-ad/19").withJsonBody(jsonReq)
       val resp = route(app, req).get
 
       status(resp) mustBe ACCEPTED
@@ -75,7 +75,7 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
     }
 
     "delete a car advert" in {
-      val req = FakeRequest(DELETE, "/api/car-ad/33")
+      val req = FakeRequest(DELETE, "/api/car-ad/19")
       val resp = route(app, req).get
 
       status(resp) mustBe ACCEPTED

@@ -1,19 +1,27 @@
 package controllers
 
+import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play._
 import play.api.libs.json.Json
 import play.api.mvc._
 import play.api.test.Helpers._
 import play.api.test._
+import services.IDGenerator
+import org.mockito.Mockito._
+import org.scalatest._
 
 import scala.concurrent.Future
 
-class CarAdvertControllerSpec extends PlaySpec with Results {
-
-  val controller = new CarAdvertController()
+class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
+  val generator = mock[IDGenerator]
 
   "Car Advert #index" must {
     "return list of all car adverts ordered by id" in {
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val result: Future[Result] = controller.show("id")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(result)
@@ -33,6 +41,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
     }
 
     "return list of all car adverts ordered by title" in {
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val result: Future[Result] = controller.show("title")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(result)
@@ -45,6 +58,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
     }
 
     "return list of all car adverts ordered by fuel" in {
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val result: Future[Result] = controller.show("fuel")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(result)
@@ -57,6 +75,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
     }
 
     "return list of all car adverts ordered by price" in {
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val result: Future[Result] = controller.show("price")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(result)
@@ -69,6 +92,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
     }
 
     "return list of all car adverts ordered by new" in {
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val result: Future[Result] = controller.show("new")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(result)
@@ -81,6 +109,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
     }
 
     "return list of all car adverts ordered by mileage" in {
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val result: Future[Result] = controller.show("mileage")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(result)
@@ -93,6 +126,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
     }
 
     "return list of all car adverts ordered by first_registration" in {
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val result: Future[Result] = controller.show("first_registration")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(result)
@@ -107,6 +145,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
 
   "Car Advert #read(id)" must {
     "return data for single car advert by id" in {
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val result: Future[Result] = controller.read(777)
         .apply(FakeRequest(GET, "/api/car-ad/777"))
       val bodyText: String = contentAsString(result)
@@ -122,6 +165,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
 
     "return `No Content` for single car advert if no data was" +
       "found for the specified id" in {
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val result: Future[Result] = controller.read(111)
         .apply(FakeRequest(GET, "/api/car-ad/111"))
 
@@ -131,7 +179,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
 
   "Car Advert #delete(id)" must {
     "delete car advert by id" in {
-      val controller = new CarAdvertController()
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val result: Future[Result] = controller.delete(777)
         .apply(FakeRequest(DELETE, "/api/car-ad/777"))
 
@@ -148,7 +200,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
 
     "respond with `Not Modified` " +
       "if there is no car with specified id to delete" in {
-      val controller = new CarAdvertController()
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val result: Future[Result] = controller.delete(111)
         .apply(FakeRequest(DELETE, "/api/car-ad/111"))
 
@@ -173,7 +229,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
         "price" -> 10000,
         "new" -> true
       )
-      val controller = new CarAdvertController()
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val request = FakeRequest(PUT, "/api/car-ad")
         .withJsonBody(jsonReq)
 
@@ -200,7 +260,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
         "mileage" -> 30000,
         "first_registration" -> "2002-04-07"
       )
-      val controller = new CarAdvertController()
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val request = FakeRequest(PUT, "/api/car-ad")
         .withJsonBody(jsonReq)
 
@@ -225,7 +289,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
         "new" -> false
       )
 
-     val controller = new CarAdvertController()
+     when(generator.generate()).thenReturn(22)
+       .thenReturn(33)
+       .thenReturn(777)
+       .thenReturn(999)
+     val controller = new CarAdvertController(generator)
      val request = FakeRequest(PUT, "/api/car-ad")
         .withJsonBody(jsonReq)
 
@@ -250,7 +318,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
         "price" -> 10000,
         "new" -> false
       )
-      val controller = new CarAdvertController()
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val request = FakeRequest(PUT, "/api/car-ad")
         .withJsonBody(jsonReq)
 
@@ -279,7 +351,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
         "mileage" -> 30000,
         "first_registration" -> "2002-04-07"
       )
-      val controller = new CarAdvertController()
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val request = FakeRequest(POST, "/api/car-ad/777")
         .withJsonBody(jsonReq)
       val result: Future[Result] = controller.update(777)(request)
@@ -305,7 +381,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
         "first_registration" -> "2002-04-07"
       )
 
-      val controller = new CarAdvertController()
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val request = FakeRequest(POST, "/api/car-ad/111")
         .withJsonBody(jsonReq)
       val result: Future[Result] = controller.update(111)(request)
@@ -330,7 +410,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
         "first_registration" -> "2002-04-07"
       )
 
-      val controller = new CarAdvertController()
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val request = FakeRequest(POST, "/api/car-ad/111")
         .withJsonBody(jsonReq)
       val result: Future[Result] = controller.update(111)(request)
@@ -355,7 +439,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
         "mileage" -> 30000
       )
 
-      val controller = new CarAdvertController()
+      when(generator.generate()).thenReturn(22)
+        .thenReturn(33)
+        .thenReturn(777)
+        .thenReturn(999)
+      val controller = new CarAdvertController(generator)
       val request = FakeRequest(POST, "/api/car-ad/111")
         .withJsonBody(jsonReq)
       val result: Future[Result] = controller.update(111)(request)

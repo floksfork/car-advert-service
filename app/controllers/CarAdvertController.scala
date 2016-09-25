@@ -2,21 +2,24 @@ package controllers
 
 import java.text.SimpleDateFormat
 import java.util.Date
+import javax.inject.{Inject, Singleton}
 
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
+import services.IDGenerator
 
 import scala.util.{Failure, Success, Try}
 
-class CarAdvertController extends Controller {
+@Singleton
+class CarAdvertController @Inject() (idGenerator: IDGenerator) extends Controller {
 
   import controllers.DateUtil._
 
   //TODO: switch to DB storage lately.
   var cars = List[Car](
-    Car(Some(22), "Audi A4", Fuel("diesel"), 10000, false, Option(43000), Option(strToDate("2008-09-14").get)),
-    Car(Some(33), "Kia Ceed", Fuel("gasoline"), 8000, false, Option(27000), Option(strToDate("2013-05-28").get)),
-    Car(Some(777), "Skoda Octavia", Fuel("diesel"), 25000, true, None, None)
+    Car(Some(idGenerator.generate()), "Audi A4", Fuel("diesel"), 10000, false, Option(43000), Option(strToDate("2008-09-14").get)),
+    Car(Some(idGenerator.generate()), "Kia Ceed", Fuel("gasoline"), 8000, false, Option(27000), Option(strToDate("2013-05-28").get)),
+    Car(Some(idGenerator.generate()), "Skoda Octavia", Fuel("diesel"), 25000, true, None, None)
   )
 
   implicit val carAdWrites = new Writes[Car] {
@@ -158,14 +161,14 @@ class CarAdvertController extends Controller {
     val price = (json \ "price").as[Int]
     val isNew = (json \ "new").as[Boolean]
     val mileage = (json \ "mileage").validateOpt[Int].getOrElse(None)
-    val firstReg: Option[Date] = parseFirstRegistation(json)
+    val firstReg: Option[Date] = parseFirstRegistration(json)
 
-    Car(Option(999), title, Fuel(fuel), price, isNew, mileage, firstReg)
+    Car(Option(idGenerator.generate()), title, Fuel(fuel), price, isNew, mileage, firstReg)
   }
 
   private def validOldCar(car: Car): Boolean = car.mileage.isDefined && car.firstReg.isDefined
 
-  private def parseFirstRegistation(json: JsValue): Option[Date] = (json \ "first_registration").validateOpt[String].getOrElse(None) match {
+  private def parseFirstRegistration(json: JsValue): Option[Date] = (json \ "first_registration").validateOpt[String].getOrElse(None) match {
     case Some(d) => strToDate(d) match {
       case s: Success[Date] => Option(s.get)
       case f: Failure[Date] => None
