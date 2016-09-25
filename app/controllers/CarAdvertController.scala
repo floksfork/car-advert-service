@@ -13,7 +13,7 @@ class CarAdvertController extends Controller {
   import controllers.DateUtil._
 
   //TODO: switch to DB storage lately.
-  val cars = List[Car](
+  var cars = List[Car](
     Car(Some(22), "Audi A4", "disel", 10000, false, Option(43000), Option(strToDate("2008-09-14").get)),
     Car(Some(33), "Kia Ceed", "gasoline", 8000, false, Option(27000), Option(strToDate("2013-05-28").get)),
     Car(Some(777), "Skoda Octavia", "disel", 25000, true, None, None)
@@ -56,7 +56,15 @@ class CarAdvertController extends Controller {
 
   def update(id: Int) = TODO
 
-  def delete(id: Int) = TODO
+  def delete(id: Int) = Action {request =>
+    cars.find(c => c.id == Option(id)) match {
+      case Some(car) =>
+        cars = cars.filter(c => c.id != Option(id))
+        Accepted
+
+      case None => NotModified
+    }
+  }
 
   def describe = TODO
 }
