@@ -23,9 +23,8 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
     "render the index page" in {
       val home = route(app, FakeRequest(GET, "/")).get
 
-      status(home) mustBe OK
-      contentType(home) mustBe Some("text/plain")
-      contentAsString(home) must include ("Your new application is ready.")
+      status(home) mustBe PERMANENT_REDIRECT
+      contentType(home) mustBe None
     }
 
   }

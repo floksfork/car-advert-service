@@ -18,7 +18,7 @@ class HomeController @Inject() extends Controller {
    * a path of `/`.
    */
   def index = Action {
-    Ok("Your new application is ready.")
+    PermanentRedirect("/api/car-ads")
   }
 
 }
