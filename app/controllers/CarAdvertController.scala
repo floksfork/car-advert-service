@@ -108,7 +108,44 @@ class CarAdvertController extends Controller {
     }
   }
 
-  def describe = TODO
+  def describe = Action{ request =>
+    val msg = Json.obj(
+      "message" -> "You may use the next URIs to interact with car advert service",
+      "desc" -> Json.arr(
+        Json.obj(
+          "method" -> "GET",
+          "uri" -> "/api/car-ads",
+          "explanation" -> "returns list of all car adverts"
+        ),
+        Json.obj(
+          "method" -> "GET",
+          "uri" -> "/api/car-ad/:id",
+          "explanation" -> "returns data for single car advert by id"
+        ),
+        Json.obj(
+          "method" -> "PUT",
+          "uri" -> "/api/car-ad",
+          "explanation" -> "adds car advert"
+        ),
+        Json.obj(
+          "method" -> "POST",
+          "uri" -> "/api/car-ad/:id",
+          "explanation" -> "modifys car advert by id"
+        ),
+        Json.obj(
+          "method" -> "DELETE",
+          "uri" -> "/api/car-ad/:id",
+          "explanation" -> "deletes car advert by id"
+        ),
+        Json.obj(
+          "method" -> "OPTIONS",
+          "uri" -> "/api/car-ads ",
+          "explanation" -> "provides available URIs and its description"
+        )
+      )
+    )
+    Ok (Json.stringify(msg))
+  }
 
   private def parseJsonCar(json: JsValue): Car = {
     val title = (json \ "title").as[String]
