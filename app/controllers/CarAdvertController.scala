@@ -60,14 +60,43 @@ class CarAdvertController extends Controller {
           cars = cars ::: List(car)
           Created
         } else {
-          BadRequest("`new` and `first_registration` are mandatory for old cars.")
+          val msg = Json.toJson(Map("message" -> "`new` and `first_registration` are mandatory for old cars."))
+          BadRequest(msg)
         }
 
-      case None => BadRequest("Expected application/json request.")
+      case None =>
+        val msg = Json.toJson(Map("message" -> "Expected application/json request."))
+        BadRequest(msg)
     }
   }
 
-  def update(id: Int) = TODO
+  def update(id: Int) = Action { request =>
+    request.body.asJson match {
+      case Some(jsonBody) =>
+        val car = parseJsonCar(jsonBody)
+        if (car.isNew || validOldCar(car)) {
+          cars.find(c => c.id == Option(id)) match {
+            case Some(carForUpdate) =>
+              cars = cars.filter(c => c.id != Option(id)) ::: List(
+                carForUpdate.copy(
+                  title = car.title, fuel = car.fuel,
+                  price = car.price, isNew = car.isNew,
+                  mileage = car.mileage, firstReg = car.firstReg
+                )
+              )
+              Accepted
+
+            case None => NotModified
+          }
+        } else {
+          val msg = Json.toJson(Map("message" -> "`new` and `first_registration` are mandatory for old cars."))
+          BadRequest(msg)
+        }
+      case None =>
+        val msg = Json.toJson(Map("message" -> "Expected application/json request."))
+        BadRequest(msg)
+    }
+  }
 
   def delete(id: Int) = Action { request =>
     cars.find(c => c.id == Option(id)) match {
