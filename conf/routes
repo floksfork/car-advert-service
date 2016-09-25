@@ -6,7 +6,7 @@
 GET     /                           controllers.HomeController.index
 
 # Car advert service
-GET         /api/car-ads                    controllers.CarAdvertController.index
+GET         /api/car-ads                    controllers.CarAdvertController.show(orderBy: String ?= "id")
 GET         /api/car-ad/:id                 controllers.CarAdvertController.read(id: Int)
 PUT         /api/car-ad                     controllers.CarAdvertController.create
 POST        /api/car-ad/:id                 controllers.CarAdvertController.update(id: Int)

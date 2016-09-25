@@ -13,8 +13,8 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
   val controller = new CarAdvertController()
 
   "Car Advert #index" must {
-    "return list of all car adverts" in {
-      val result: Future[Result] = controller.index()
+    "return list of all car adverts ordered by id" in {
+      val result: Future[Result] = controller.show("id")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(result)
       val json = Json.parse(bodyText)
@@ -30,6 +30,78 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
       )
 
       isNews must ===(List(false, false, true))
+    }
+
+    "return list of all car adverts ordered by title" in {
+      val result: Future[Result] = controller.show("title")
+        .apply(FakeRequest(GET, "/api/car-ads"))
+      val bodyText: String = contentAsString(result)
+      val json = Json.parse(bodyText)
+
+      val titles = (json \ "adverts" \\ "title")
+        .map(_.as[String]) //to convert JsString to String
+
+      titles mustBe List("Audi A4", "Kia Ceed", "Skoda Octavia")
+    }
+
+    "return list of all car adverts ordered by fuel" in {
+      val result: Future[Result] = controller.show("fuel")
+        .apply(FakeRequest(GET, "/api/car-ads"))
+      val bodyText: String = contentAsString(result)
+      val json = Json.parse(bodyText)
+
+      val titles = (json \ "adverts" \\ "title")
+        .map(_.as[String]) //to convert JsString to String
+
+      titles mustBe List("Audi A4", "Skoda Octavia", "Kia Ceed")
+    }
+
+    "return list of all car adverts ordered by price" in {
+      val result: Future[Result] = controller.show("price")
+        .apply(FakeRequest(GET, "/api/car-ads"))
+      val bodyText: String = contentAsString(result)
+      val json = Json.parse(bodyText)
+
+      val titles = (json \ "adverts" \\ "title")
+        .map(_.as[String]) //to convert JsString to String
+
+      titles mustBe List("Kia Ceed", "Audi A4", "Skoda Octavia")
+    }
+
+    "return list of all car adverts ordered by new" in {
+      val result: Future[Result] = controller.show("new")
+        .apply(FakeRequest(GET, "/api/car-ads"))
+      val bodyText: String = contentAsString(result)
+      val json = Json.parse(bodyText)
+
+      val titles = (json \ "adverts" \\ "title")
+        .map(_.as[String]) //to convert JsString to String
+
+      titles mustBe List("Skoda Octavia", "Audi A4","Kia Ceed")
+    }
+
+    "return list of all car adverts ordered by mileage" in {
+      val result: Future[Result] = controller.show("mileage")
+        .apply(FakeRequest(GET, "/api/car-ads"))
+      val bodyText: String = contentAsString(result)
+      val json = Json.parse(bodyText)
+
+      val titles = (json \ "adverts" \\ "title")
+        .map(_.as[String]) //to convert JsString to String
+
+      titles mustBe List("Skoda Octavia", "Kia Ceed", "Audi A4")
+    }
+
+    "return list of all car adverts ordered by first_registration" in {
+      val result: Future[Result] = controller.show("first_registration")
+        .apply(FakeRequest(GET, "/api/car-ads"))
+      val bodyText: String = contentAsString(result)
+      val json = Json.parse(bodyText)
+
+      val titles = (json \ "adverts" \\ "title")
+        .map(_.as[String]) //to convert JsString to String
+
+      titles mustBe List("Audi A4", "Kia Ceed", "Skoda Octavia")
     }
   }
 
@@ -63,7 +135,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
       val result: Future[Result] = controller.delete(777)
         .apply(FakeRequest(DELETE, "/api/car-ad/777"))
 
-      val afterDeleteResult: Future[Result] = controller.index()
+      val afterDeleteResult: Future[Result] = controller.show("id")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(afterDeleteResult)
       val json = Json.parse(bodyText)
@@ -80,7 +152,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
       val result: Future[Result] = controller.delete(111)
         .apply(FakeRequest(DELETE, "/api/car-ad/111"))
 
-      val afterDeleteResult = controller.index()
+      val afterDeleteResult = controller.show("id")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(afterDeleteResult)
       val json = Json.parse(bodyText)
@@ -107,7 +179,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
 
       val result: Future[Result] = controller.create()(request)
 
-      val afterCreateResult = controller.index()
+      val afterCreateResult = controller.show("id")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(afterCreateResult)
       val json = Json.parse(bodyText)
@@ -134,7 +206,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
 
       val result: Future[Result] = controller.create()(request)
 
-      val afterCreateResult = controller.index()
+      val afterCreateResult = controller.show("id")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(afterCreateResult)
       val json = Json.parse(bodyText)
@@ -159,7 +231,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
 
       val result: Future[Result] = controller.create()(request)
 
-      val afterCreateResult = controller.index()
+      val afterCreateResult = controller.show("id")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(afterCreateResult)
       val json = Json.parse(bodyText)
@@ -184,7 +256,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
 
       val result: Future[Result] = controller.create()(request)
 
-      val afterCreateResult = controller.index()
+      val afterCreateResult = controller.show("id")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(afterCreateResult)
       val json = Json.parse(bodyText)
@@ -212,7 +284,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
         .withJsonBody(jsonReq)
       val result: Future[Result] = controller.update(777)(request)
 
-      val afterCreateResult = controller.index()
+      val afterCreateResult = controller.show("id")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(afterCreateResult)
       val json = Json.parse(bodyText)
@@ -238,7 +310,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
         .withJsonBody(jsonReq)
       val result: Future[Result] = controller.update(111)(request)
 
-      val afterCreateResult = controller.index()
+      val afterCreateResult = controller.show("id")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(afterCreateResult)
       val json = Json.parse(bodyText)
@@ -263,7 +335,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
         .withJsonBody(jsonReq)
       val result: Future[Result] = controller.update(111)(request)
 
-      val afterCreateResult = controller.index()
+      val afterCreateResult = controller.show("id")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(afterCreateResult)
       val json = Json.parse(bodyText)
@@ -288,7 +360,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results {
         .withJsonBody(jsonReq)
       val result: Future[Result] = controller.update(111)(request)
 
-      val afterCreateResult = controller.index()
+      val afterCreateResult = controller.show("id")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(afterCreateResult)
       val json = Json.parse(bodyText)

@@ -37,8 +37,8 @@ class CarAdvertController extends Controller {
     )
   }
 
-  def index = Action { request =>
-    val json = Json.toJson(Adverts(cars))
+  def show(orderBy: String) = Action { request =>
+    val json = Json.toJson(Adverts(carsOrderedBy(orderBy)))
     Ok(json)
   }
 
@@ -59,7 +59,7 @@ class CarAdvertController extends Controller {
         if (car.isNew || validOldCar(car)) {
           cars = cars ::: List(car)
 
-          val msg = Json.toJson(Map("message"-> "added successfully"))
+          val msg = Json.toJson(Map("message" -> "added successfully"))
           Created(msg)
         } else {
           val msg = Json.toJson(Map("message" -> "`new` and `first_registration` are mandatory for old cars."))
@@ -87,7 +87,7 @@ class CarAdvertController extends Controller {
                 )
               )
 
-              val msg = Json.toJson(Map("message"-> "updated successfully"))
+              val msg = Json.toJson(Map("message" -> "updated successfully"))
               Accepted(msg)
 
             case None => NotModified
@@ -106,7 +106,7 @@ class CarAdvertController extends Controller {
     cars.find(c => c.id == Option(id)) match {
       case Some(car) =>
         cars = cars.filter(c => c.id != Option(id))
-        val msg = Json.toJson(Map("message"-> "deleted successfully"))
+        val msg = Json.toJson(Map("message" -> "deleted successfully"))
         Accepted(msg)
 
       case None => NotModified
@@ -171,6 +171,16 @@ class CarAdvertController extends Controller {
       case f: Failure[Date] => None
     }
     case None => None
+  }
+
+  private def carsOrderedBy(orderBy: String): List[Car] = orderBy match {
+    case "title" => cars.sortBy(_.title)
+    case "fuel" => cars.sortBy(_.id.getOrElse(0)).sortBy(_.fuel)
+    case "price" => cars.sortBy(_.price)
+    case "new" => cars.filter(c => c.isNew).sortBy(_.id.getOrElse(0)) ::: cars.filter(c => !c.isNew).sortBy(_.id.getOrElse(0))
+    case "mileage" => cars.sortWith(_.mileage.getOrElse(0) < _.mileage.getOrElse(0))
+    case "first_registration" => cars.filter(c => c.firstReg.isDefined).sortBy(_.firstReg.get.getTime) ::: cars.filter(c => !c.firstReg.isDefined).sortBy(_.id.getOrElse(0))
+    case _ => cars.sortBy(_.id.getOrElse(0))
   }
 }
 
