@@ -40,8 +40,8 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
     "return a car advert for id" in {
       val resp = route(app, FakeRequest(GET, "/api/car-ad/18")).get
 
-      status(resp) mustBe OK
-      contentType(resp) mustBe Some("application/json")
+      status(resp) mustBe NO_CONTENT
+      contentType(resp) mustBe None
     }
 
     "create a car advert" in {
@@ -70,16 +70,16 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
       val req = FakeRequest(POST, "/api/car-ad/19").withJsonBody(jsonReq)
       val resp = route(app, req).get
 
-      status(resp) mustBe ACCEPTED
-      contentType(resp) mustBe Some("application/json")
+      status(resp) mustBe NOT_MODIFIED
+      contentType(resp) mustBe None
     }
 
     "delete a car advert" in {
       val req = FakeRequest(DELETE, "/api/car-ad/19")
       val resp = route(app, req).get
 
-      status(resp) mustBe ACCEPTED
-      contentType(resp) mustBe Some("application/json")
+      status(resp) mustBe NOT_MODIFIED
+      contentType(resp) mustBe None
     }
 
     "view options for the web service" in {

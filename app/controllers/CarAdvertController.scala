@@ -6,21 +6,14 @@ import javax.inject.{Inject, Singleton}
 
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
-import services.IDGenerator
+import services.{AdvertStorage, IDGenerator}
 
 import scala.util.{Failure, Success, Try}
 
 @Singleton
-class CarAdvertController @Inject() (idGenerator: IDGenerator) extends Controller {
+class CarAdvertController @Inject()(idGenerator: IDGenerator, storage: AdvertStorage) extends Controller {
 
   import controllers.DateUtil._
-
-  //TODO: switch to DB storage lately.
-  var cars = List[Car](
-    Car(Some(idGenerator.generate()), "Audi A4", Fuel("diesel"), 10000, false, Option(43000), Option(strToDate("2008-09-14").get)),
-    Car(Some(idGenerator.generate()), "Kia Ceed", Fuel("gasoline"), 8000, false, Option(27000), Option(strToDate("2013-05-28").get)),
-    Car(Some(idGenerator.generate()), "Skoda Octavia", Fuel("diesel"), 25000, true, None, None)
-  )
 
   implicit val carAdWrites = new Writes[Car] {
     override def writes(c: Car): JsValue = Json.obj(
@@ -41,12 +34,12 @@ class CarAdvertController @Inject() (idGenerator: IDGenerator) extends Controlle
   }
 
   def show(orderBy: String) = Action { request =>
-    val json = Json.toJson(Adverts(carsOrderedBy(orderBy)))
+    val json = Json.toJson(Adverts(carsOrderedBy(orderBy, storage.find())))
     Ok(json)
   }
 
   def read(id: Int) = Action { request =>
-    cars.find(ad => ad.id == Option(id)) match {
+    storage.read(id) match {
       case Some(ad) =>
         val json = Json.toJson(ad)
         Ok(json)
@@ -60,8 +53,7 @@ class CarAdvertController @Inject() (idGenerator: IDGenerator) extends Controlle
       case Some(jsonBody) =>
         val car = parseJsonCar(jsonBody)
         if (car.isNew || validOldCar(car)) {
-          cars = cars ::: List(car)
-
+          storage.create(car)
           val msg = Json.toJson(Map("message" -> "added successfully"))
           Created(msg)
         } else {
@@ -78,22 +70,13 @@ class CarAdvertController @Inject() (idGenerator: IDGenerator) extends Controlle
   def update(id: Int) = Action { request =>
     request.body.asJson match {
       case Some(jsonBody) =>
-        val car = parseJsonCar(jsonBody)
+        val car = parseJsonCar(jsonBody, id)
         if (car.isNew || validOldCar(car)) {
-          cars.find(c => c.id == Option(id)) match {
-            case Some(carForUpdate) =>
-              cars = cars.filter(c => c.id != Option(id)) ::: List(
-                carForUpdate.copy(
-                  title = car.title, fuel = car.fuel,
-                  price = car.price, isNew = car.isNew,
-                  mileage = car.mileage, firstReg = car.firstReg
-                )
-              )
-
-              val msg = Json.toJson(Map("message" -> "updated successfully"))
-              Accepted(msg)
-
-            case None => NotModified
+          if (storage.update(car)) {
+            val msg = Json.toJson(Map("message" -> "updated successfully"))
+            Accepted(msg)
+          } else {
+            NotModified
           }
         } else {
           val msg = Json.toJson(Map("message" -> "`new` and `first_registration` are mandatory for old cars."))
@@ -105,15 +88,12 @@ class CarAdvertController @Inject() (idGenerator: IDGenerator) extends Controlle
     }
   }
 
-  def delete(id: Int) = Action { request =>
-    cars.find(c => c.id == Option(id)) match {
-      case Some(car) =>
-        cars = cars.filter(c => c.id != Option(id))
-        val msg = Json.toJson(Map("message" -> "deleted successfully"))
-        Accepted(msg)
-
-      case None => NotModified
-    }
+  def delete(id: Int) = Action { request => if (storage.delete(id)) {
+    val msg = Json.toJson(Map("message" -> "deleted successfully"))
+    Accepted(msg)
+  } else {
+    NotModified
+  }
   }
 
   def describe = Action { request =>
@@ -155,7 +135,7 @@ class CarAdvertController @Inject() (idGenerator: IDGenerator) extends Controlle
     Ok(msg)
   }
 
-  private def parseJsonCar(json: JsValue): Car = {
+  private def parseJsonCar(json: JsValue, id: Int = idGenerator.generate()): Car = {
     val title = (json \ "title").as[String]
     val fuel = (json \ "fuel").as[String]
     val price = (json \ "price").as[Int]
@@ -163,7 +143,7 @@ class CarAdvertController @Inject() (idGenerator: IDGenerator) extends Controlle
     val mileage = (json \ "mileage").validateOpt[Int].getOrElse(None)
     val firstReg: Option[Date] = parseFirstRegistration(json)
 
-    Car(Option(idGenerator.generate()), title, Fuel(fuel), price, isNew, mileage, firstReg)
+    Car(Option(id), title, Fuel(fuel), price, isNew, mileage, firstReg)
   }
 
   private def validOldCar(car: Car): Boolean = car.mileage.isDefined && car.firstReg.isDefined
@@ -176,33 +156,36 @@ class CarAdvertController @Inject() (idGenerator: IDGenerator) extends Controlle
     case None => None
   }
 
-  private def carsOrderedBy(orderBy: String): List[Car] = orderBy match {
-    case "title" => cars.sortBy(_.title)
-    case "fuel" => cars.sortBy(_.id.getOrElse(0)).sortBy(_.fuel)
-    case "price" => cars.sortBy(_.price)
-    case "new" => cars.filter(c => c.isNew).sortBy(_.id.getOrElse(0)) ::: cars.filter(c => !c.isNew).sortBy(_.id.getOrElse(0))
-    case "mileage" => cars.sortWith(_.mileage.getOrElse(0) < _.mileage.getOrElse(0))
-    case "first_registration" => cars.filter(c => c.firstReg.isDefined).sortBy(_.firstReg.get.getTime) ::: cars.filter(c => !c.firstReg.isDefined).sortBy(_.id.getOrElse(0))
-    case _ => cars.sortBy(_.id.getOrElse(0))
+  private def carsOrderedBy(orderBy: String, data: List[Car]): List[Car] = orderBy match {
+    case "title" => data.sortBy(_.title)
+    case "fuel" => data.sortBy(_.id.getOrElse(0)).sortBy(_.fuel)
+    case "price" => data.sortBy(_.price)
+    case "new" => data.filter(c => c.isNew).sortBy(_.id.getOrElse(0)) ::: data.filter(c => !c.isNew).sortBy(_.id.getOrElse(0))
+    case "mileage" => data.sortWith(_.mileage.getOrElse(0) < _.mileage.getOrElse(0))
+    case "first_registration" => data.filter(c => c.firstReg.isDefined).sortBy(_.firstReg.get.getTime) ::: data.filter(c => !c.firstReg.isDefined).sortBy(_.id.getOrElse(0))
+    case _ => data.sortBy(_.id.getOrElse(0))
   }
 }
 
-abstract class Fuel extends Ordered[Fuel]{
+abstract class Fuel extends Ordered[Fuel] {
 
   override def compare(that: Fuel): Int = this.name compare that.name
 
   def name: String
 }
+
 object Fuel {
-  def apply(name: String):Fuel = name match {
+  def apply(name: String): Fuel = name match {
     case "diesel" => Diesel
     case _ => Gasoline
   }
 }
+
 case object Diesel extends Fuel {
   override def name: String = "diesel"
 }
-case object Gasoline extends Fuel{
+
+case object Gasoline extends Fuel {
   override def name: String = "gasoline"
 }
 

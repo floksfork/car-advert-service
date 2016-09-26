@@ -1,27 +1,31 @@
 package controllers
 
+import org.mockito.Matchers._
+import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play._
 import play.api.libs.json.Json
 import play.api.mvc._
 import play.api.test.Helpers._
 import play.api.test._
-import services.IDGenerator
-import org.mockito.Mockito._
-import org.scalatest._
+import services.{AdvertStorage, IDGenerator}
 
 import scala.concurrent.Future
 
-class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
+class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar {
   val generator = mock[IDGenerator]
+
+  val car1 = Car(Some(22), "Audi A4", Fuel("diesel"), 10000, false, Option(43000), Option(DateUtil.strToDate("2008-09-14").get))
+  val car2 = Car(Some(33), "Kia Ceed", Fuel("gasoline"), 8000, false, Option(27000), Option(DateUtil.strToDate("2013-05-28").get))
+  val car3 = Car(Some(777), "Skoda Octavia", Fuel("diesel"), 25000, true, None, None)
+  val car4 = Car(Some(999), "Lanos", Fuel("gasoline"), 10000, true, None, None)
+
 
   "Car Advert #index" must {
     "return list of all car adverts ordered by id" in {
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val storage = mock[AdvertStorage]
+      when(storage.find()) thenReturn List(car1, car2, car3)
+      val controller = new CarAdvertController(generator, storage)
       val result: Future[Result] = controller.show("id")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(result)
@@ -33,19 +37,14 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
       val isNews = (json \ "adverts" \\ "new")
         .map(_.as[Boolean])
 
-      titles must ===(
-        List("Audi A4", "Kia Ceed", "Skoda Octavia")
-      )
-
-      isNews must ===(List(false, false, true))
+      titles mustBe List("Audi A4", "Kia Ceed", "Skoda Octavia")
+      isNews mustBe List(false, false, true)
     }
 
     "return list of all car adverts ordered by title" in {
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val storage = mock[AdvertStorage]
+      when(storage.find()) thenReturn List(car1, car2, car3)
+      val controller = new CarAdvertController(generator, storage)
       val result: Future[Result] = controller.show("title")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(result)
@@ -58,11 +57,9 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
     }
 
     "return list of all car adverts ordered by fuel" in {
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val storage = mock[AdvertStorage]
+      when(storage.find()) thenReturn List(car1, car2, car3)
+      val controller = new CarAdvertController(generator, storage)
       val result: Future[Result] = controller.show("fuel")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(result)
@@ -75,11 +72,9 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
     }
 
     "return list of all car adverts ordered by price" in {
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val storage = mock[AdvertStorage]
+      when(storage.find()) thenReturn List(car1, car2, car3)
+      val controller = new CarAdvertController(generator, storage)
       val result: Future[Result] = controller.show("price")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(result)
@@ -92,11 +87,9 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
     }
 
     "return list of all car adverts ordered by new" in {
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val storage = mock[AdvertStorage]
+      when(storage.find()) thenReturn List(car1, car2, car3)
+      val controller = new CarAdvertController(generator, storage)
       val result: Future[Result] = controller.show("new")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(result)
@@ -105,15 +98,13 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
       val titles = (json \ "adverts" \\ "title")
         .map(_.as[String]) //to convert JsString to String
 
-      titles mustBe List("Skoda Octavia", "Audi A4","Kia Ceed")
+      titles mustBe List("Skoda Octavia", "Audi A4", "Kia Ceed")
     }
 
     "return list of all car adverts ordered by mileage" in {
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val storage = mock[AdvertStorage]
+      when(storage.find()) thenReturn List(car1, car2, car3)
+      val controller = new CarAdvertController(generator, storage)
       val result: Future[Result] = controller.show("mileage")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(result)
@@ -126,11 +117,9 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
     }
 
     "return list of all car adverts ordered by first_registration" in {
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val storage = mock[AdvertStorage]
+      when(storage.find()) thenReturn List(car1, car2, car3)
+      val controller = new CarAdvertController(generator, storage)
       val result: Future[Result] = controller.show("first_registration")
         .apply(FakeRequest(GET, "/api/car-ads"))
       val bodyText: String = contentAsString(result)
@@ -145,11 +134,9 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
 
   "Car Advert #read(id)" must {
     "return data for single car advert by id" in {
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val storage = mock[AdvertStorage]
+      when(storage.read(any[Int])) thenReturn Option(car3)
+      val controller = new CarAdvertController(generator, storage)
       val result: Future[Result] = controller.read(777)
         .apply(FakeRequest(GET, "/api/car-ad/777"))
       val bodyText: String = contentAsString(result)
@@ -165,11 +152,10 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
 
     "return `No Content` for single car advert if no data was" +
       "found for the specified id" in {
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val storage = mock[AdvertStorage]
+      when(storage.read(any[Int])) thenReturn None
+
+      val controller = new CarAdvertController(generator, storage)
       val result: Future[Result] = controller.read(111)
         .apply(FakeRequest(GET, "/api/car-ad/111"))
 
@@ -179,11 +165,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
 
   "Car Advert #delete(id)" must {
     "delete car advert by id" in {
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val storage = mock[AdvertStorage]
+      when(storage.find()) thenReturn List(car1, car2)
+      when(storage.delete(777)) thenReturn true
+
+      val controller = new CarAdvertController(generator, storage)
       val result: Future[Result] = controller.delete(777)
         .apply(FakeRequest(DELETE, "/api/car-ad/777"))
 
@@ -200,11 +186,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
 
     "respond with `Not Modified` " +
       "if there is no car with specified id to delete" in {
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val storage = mock[AdvertStorage]
+      when(storage.find()) thenReturn List(car1, car2, car3)
+      when(storage.delete(111)) thenReturn false
+
+      val controller = new CarAdvertController(generator, storage)
       val result: Future[Result] = controller.delete(111)
         .apply(FakeRequest(DELETE, "/api/car-ad/111"))
 
@@ -229,11 +215,9 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
         "price" -> 10000,
         "new" -> true
       )
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val storage = mock[AdvertStorage]
+      when(storage.find()) thenReturn List(car1, car2, car3, car4)
+      val controller = new CarAdvertController(generator, storage)
       val request = FakeRequest(PUT, "/api/car-ad")
         .withJsonBody(jsonReq)
 
@@ -260,11 +244,10 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
         "mileage" -> 30000,
         "first_registration" -> "2002-04-07"
       )
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val oldCar = Car(Some(999), "Lanos", Fuel("gasoline"), 10000, false, Option(30000), Option(DateUtil.strToDate("2002-04-07").get))
+      val storage = mock[AdvertStorage]
+      when(storage.find()) thenReturn List(car1, car2, car3, oldCar)
+      val controller = new CarAdvertController(generator, storage)
       val request = FakeRequest(PUT, "/api/car-ad")
         .withJsonBody(jsonReq)
 
@@ -281,7 +264,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
       titles must be(List("Audi A4", "Kia Ceed", "Skoda Octavia", "Lanos"))
     }
 
-   "not add car advert if there is no mileage for old car" in {
+    "not add car advert if there is no mileage for old car" in {
       val jsonReq = Json.obj(
         "title" -> "Lanos",
         "fuel" -> "gasoline",
@@ -289,12 +272,10 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
         "new" -> false
       )
 
-     when(generator.generate()).thenReturn(22)
-       .thenReturn(33)
-       .thenReturn(777)
-       .thenReturn(999)
-     val controller = new CarAdvertController(generator)
-     val request = FakeRequest(PUT, "/api/car-ad")
+      val storage = mock[AdvertStorage]
+      when(storage.find()) thenReturn List(car1, car2, car3)
+      val controller = new CarAdvertController(generator, storage)
+      val request = FakeRequest(PUT, "/api/car-ad")
         .withJsonBody(jsonReq)
 
       val result: Future[Result] = controller.create()(request)
@@ -318,11 +299,9 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
         "price" -> 10000,
         "new" -> false
       )
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val storage = mock[AdvertStorage]
+      when(storage.find()) thenReturn List(car1, car2, car3)
+      val controller = new CarAdvertController(generator, storage)
       val request = FakeRequest(PUT, "/api/car-ad")
         .withJsonBody(jsonReq)
 
@@ -341,7 +320,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
     }
   }
 
-  "Car Advert#update(id)" must{
+  "Car Advert#update(id)" must {
     "modify car advert by id" in {
       val jsonReq = Json.obj(
         "title" -> "Lanos",
@@ -351,11 +330,11 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
         "mileage" -> 30000,
         "first_registration" -> "2002-04-07"
       )
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val car = Car(Some(777), "Lanos", Fuel("gasoline"), 10000, false, Option(30000), Option(DateUtil.strToDate("2002-04-07").get))
+      val storage = mock[AdvertStorage]
+      when(storage.update(any[Car])) thenReturn true
+      when(storage.find()) thenReturn List(car1, car2, car)
+      val controller = new CarAdvertController(generator, storage)
       val request = FakeRequest(POST, "/api/car-ad/777")
         .withJsonBody(jsonReq)
       val result: Future[Result] = controller.update(777)(request)
@@ -381,11 +360,9 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
         "first_registration" -> "2002-04-07"
       )
 
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val storage = mock[AdvertStorage]
+      when(storage.find()) thenReturn List(car1, car2, car3)
+      val controller = new CarAdvertController(generator, storage)
       val request = FakeRequest(POST, "/api/car-ad/111")
         .withJsonBody(jsonReq)
       val result: Future[Result] = controller.update(111)(request)
@@ -401,7 +378,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
       titles must be(List("Audi A4", "Kia Ceed", "Skoda Octavia"))
     }
 
-    "not modify old car advert by id if there is no mileage" in{
+    "not modify old car advert by id if there is no mileage" in {
       val jsonReq = Json.obj(
         "title" -> "Lanos",
         "fuel" -> "gasoline",
@@ -410,11 +387,9 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
         "first_registration" -> "2002-04-07"
       )
 
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val storage = mock[AdvertStorage]
+      when(storage.find()) thenReturn List(car1, car2, car3)
+      val controller = new CarAdvertController(generator, storage)
       val request = FakeRequest(POST, "/api/car-ad/111")
         .withJsonBody(jsonReq)
       val result: Future[Result] = controller.update(111)(request)
@@ -430,7 +405,7 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
       titles must be(List("Audi A4", "Kia Ceed", "Skoda Octavia"))
     }
 
-    "not modify old car advert by id if there is no first_registration" in{
+    "not modify old car advert by id if there is no first_registration" in {
       val jsonReq = Json.obj(
         "title" -> "Lanos",
         "fuel" -> "gasoline",
@@ -439,11 +414,9 @@ class CarAdvertControllerSpec extends PlaySpec with Results with MockitoSugar{
         "mileage" -> 30000
       )
 
-      when(generator.generate()).thenReturn(22)
-        .thenReturn(33)
-        .thenReturn(777)
-        .thenReturn(999)
-      val controller = new CarAdvertController(generator)
+      val storage = mock[AdvertStorage]
+      when(storage.find()) thenReturn List(car1, car2, car3)
+      val controller = new CarAdvertController(generator, storage)
       val request = FakeRequest(POST, "/api/car-ad/111")
         .withJsonBody(jsonReq)
       val result: Future[Result] = controller.update(111)(request)
