@@ -17,6 +17,7 @@ Otherwise you will receive _400: Bad Request_ error with message:
 ### Up and Run
 Simply navigate to the root folder and run a command
 > activator run
+
 That will boot a server. By default server runs on port: 9000, you can freely change this setting
 as well as other in _application.conf_ file, which is located at <root folder>/conf/application.conf.
 For more details on settings, please visit the [page](https://www.playframework.com/documentation/2.5.x/Configuration)
